@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Login — YouTube Downloader{% endblock %}
+
+{% block content %}
+<style>
+    .auth-wrap {
+        max-width: 420px;
+        margin: 3rem auto;
+    }
+    .auth-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+    .auth-card h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.5rem;
+    }
+    .auth-card .auth-sub {
+        color: #64748b;
+        margin: 0 0 1.5rem;
+        font-size: 0.95rem;
+    }
+    .auth-field {
+        margin-bottom: 1rem;
+    }
+    .auth-field label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+        font-size: 0.9rem;
+    }
+    .auth-field input[type="text"],
+    .auth-field input[type="password"] {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+    .auth-field input:focus {
+        outline: 2px solid #2563eb;
+        border-color: #2563eb;
+    }
+    .auth-remember {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0 0 1.25rem;
+        font-size: 0.9rem;
+        color: #475569;
+    }
+    .auth-btn {
+        width: 100%;
+        padding: 0.65rem;
+        font-size: 1rem;
+    }
+    .auth-error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+        padding: 0.6rem 0.9rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="auth-wrap">
+    <div class="auth-card">
+        <h1>&#128274; Admin Login</h1>
+        <p class="auth-sub">Sign in to access the YouTube Downloader.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="auth-error">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="post" action="{{ url_for('auth.login') }}">
+            <div class="auth-field">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username"
+                       autocomplete="username" required autofocus>
+            </div>
+            <div class="auth-field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"
+                       autocomplete="current-password" required>
+            </div>
+            <div class="auth-remember">
+                <input type="checkbox" id="remember" name="remember" value="1">
+                <label for="remember" style="display:inline;margin:0;font-weight:400;">Remember me</label>
+            </div>
+            <button type="submit" class="btn btn-primary auth-btn">Sign In</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

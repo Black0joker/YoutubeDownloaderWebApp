@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Admin — YouTube Downloader{% endblock %}
+
+{% block content %}
+<section class="admin-page">
+    <h1>Admin Dashboard</h1>
+
+    <div class="admin-grid" id="admin-stats">
+        <div class="status-box">Loading statistics…</div>
+    </div>
+
+    <h2 style="margin:1.5rem 0 0.75rem;">Jobs</h2>
+    <div id="admin-jobs"><div class="status-box">Loading jobs…</div></div>
+
+    <div style="margin-top:1.5rem;">
+        <button class="btn btn-danger" id="cleanup-btn">Run Cleanup</button>
+        <label style="margin-left:1rem; font-size:0.9rem; color:var(--muted);">
+            <input type="checkbox" id="cleanup-all" checked>
+            Delete <strong>all</strong> completed downloads
+            (uncheck to only remove files older than the age limit)
+        </label>
+        <span id="cleanup-result" style="margin-left:1rem;"></span>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+(function () {
+    const statsEl = document.getElementById('admin-stats');
+    const jobsEl = document.getElementById('admin-jobs');
+
+    async function loadStats() {
+        try {
+            const data = await App.request('/admin/api/stats');
+            statsEl.innerHTML = `
+                <div class="stat-card"><div class="stat-value">${data.videos}</div><div class="stat-label">Videos</div></div>
+                <div class="stat-card"><div class="stat-value">${data.downloads}</div><div class="stat-label">Downloads</div></div>
+                <div class="stat-card"><div class="stat-value">${data.active_jobs}</div><div class="stat-label">Active Jobs</div></div>
+                <div class="stat-card"><div class="stat-value">${data.completed_jobs}</div><div class="stat-label">Completed</div></div>
+                <div class="stat-card"><div class="stat-value">${data.failed_jobs}</div><div class="stat-label">Failed</div></div>
+                <div class="stat-card"><div class="stat-value">${data.storage_human}</div><div class="stat-label">Storage</div></div>
+            `;
+            const health = data.health;
+            statsEl.innerHTML += `
+                <div class="stat-card">
+                    <div class="stat-value">${health.ffmpeg ? '&#10003;' : '&#10007;'}</div>
+                    <div class="stat-label">FFmpeg</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${health.ytdlp ? '&#10003;' : '&#10007;'}</div>
+                    <div class="stat-label">yt-dlp</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${health.redis ? '&#10003;' : '&#10007;'}</div>
+                    <div class="stat-label">Redis</div>
+                </div>
+            `;
+        } catch (err) {
+            statsEl.innerHTML = `<div class="status-box error">${App.escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    async function loadJobs() {
+        try {
+            const data = await App.request('/admin/api/jobs');
+            const jobs = data.jobs || [];
+            if (!jobs.length) {
+                jobsEl.innerHTML = '<p class="empty">No jobs.</p>';
+                return;
+            }
+            jobsEl.innerHTML = `
+            <table class="table">
+                <thead><tr>
+                    <th>Job</th><th>Title</th><th>Type</th><th>Status</th><th>Progress</th><th>Size</th><th>Created</th>
+                </tr></thead>
+                <tbody>
+                ${jobs.map(j => `
+                    <tr>
+                        <td>${App.escapeHtml(j.job_id.slice(0, 8))}</td>
+                        <td>${App.escapeHtml((j.video && j.video.title) || 'Unknown')}</td>
+                        <td>${App.escapeHtml(j.type)}</td>
+                        <td><span class="badge badge-${j.status}">${j.status}</span></td>
+                        <td>${j.progress.toFixed(0)}%</td>
+                        <td>${j.file_size ? (j.file_size / 1048576).toFixed(1) + ' MB' : '-'}</td>
+                        <td>${j.created_at ? j.created_at.slice(0, 16).replace('T', ' ') : ''}</td>
+                    </tr>
+                `).join('')}
+                </tbody>
+            </table>`;
+        } catch (err) {
+            jobsEl.innerHTML = `<div class="status-box error">${App.escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    document.getElementById('cleanup-btn').addEventListener('click', async () => {
+        const resultEl = document.getElementById('cleanup-result');
+        const clearAll = document.getElementById('cleanup-all').checked;
+        resultEl.textContent = 'Running cleanup…';
+        try {
+            const res = await App.request('/admin/api/cleanup', {
+                method: 'POST',
+                body: { clear_completed: clearAll },
+            });
+            resultEl.textContent = `Expired ${res.expired_count}, freed ${res.storage_freed_bytes} bytes.`;
+            loadStats();
+            loadJobs();
+        } catch (err) {
+            resultEl.textContent = err.message;
+        }
+    });
+
+        loadStats();
+        loadJobs();
+    })();
+    </script>
+
+    <style>
+.admin-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem;
+}
+.stat-card {
+    background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 1rem; text-align: center;
+}
+.stat-value { font-size: 1.6rem; font-weight: 700; }
+.stat-label { color: var(--muted); font-size: 0.85rem; }
+</style>
+{% endblock %}

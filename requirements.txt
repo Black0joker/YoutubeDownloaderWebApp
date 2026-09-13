@@ -1,0 +1,11 @@
+Flask==3.1.1
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-Migrate==4.1.0
+SQLAlchemy==2.0.41
+yt-dlp>=2025.1.1
+rq==2.3.3
+redis==6.1.0
+gunicorn==23.0.0
+python-dotenv==1.1.0
+pytest==8.3.5

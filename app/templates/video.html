@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Video — YouTube Downloader{% endblock %}
+
+{% block content %}
+<section class="video-detail">
+    <div id="video-container" data-video-id="{{ video_id }}">
+        <div class="status-box">Loading video details…</div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/video.js') }}"></script>
+{% endblock %}

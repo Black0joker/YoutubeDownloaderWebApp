@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}My Downloads — YouTube Downloader{% endblock %}
+
+{% block content %}
+<section class="downloads-page">
+    <h1>My Downloads</h1>
+    <div id="downloads-list" class="downloads-list">
+        <div class="status-box">Loading downloads…</div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/downloads.js') }}"></script>
+{% endblock %}

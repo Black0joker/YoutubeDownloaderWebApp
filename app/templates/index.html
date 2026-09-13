@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Home — YouTube Downloader{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Download YouTube Videos &amp; Audio</h1>
+    <p class="subtitle">Paste a YouTube link to analyze available formats.</p>
+
+    <div class="url-form" id="url-form">
+        <input type="url" id="url-input" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
+        <button id="clipboard-btn" class="btn btn-secondary" type="button" title="Paste a YouTube URL from your clipboard">&#128203; Paste</button>
+        <button id="analyze-btn" class="btn btn-primary">Analyze</button>
+    </div>
+
+    <div id="analyze-status" class="status-box hidden"></div>
+    <div id="video-result" class="video-result hidden"></div>
+</section>
+
+<section class="recent-downloads">
+    <h2>Recent Downloads</h2>
+    {% if recent_jobs %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Progress</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in recent_jobs %}
+            <tr>
+                <td>{{ job.video.title if job.video else 'Unknown' }}</td>
+                <td>{{ job.type }}</td>
+                <td><span class="badge badge-{{ job.status }}">{{ job.status }}</span></td>
+                <td>{{ '%.0f'|format(job.progress or 0) }}%</td>
+                <td>{{ job.created_at.strftime('%Y-%m-%d %H:%M') if job.created_at else '' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No downloads yet.</p>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/video.js') }}"></script>
+{% endblock %}
